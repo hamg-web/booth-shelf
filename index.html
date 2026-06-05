@@ -695,7 +695,7 @@ function openShare(){
     const json=JSON.stringify({items,tags:allTags});
     const enc=LZString.compressToEncodedURIComponent(json);
     document.getElementById('suBox').textContent=`${location.origin}${location.pathname}?data=${enc}`;
-  }catch(e){document.getElementById('suBox').textContent='데이터가 너무 많아 URL 생성에 실패했습니다.';}
+  }catch(err){document.getElementById('suBox').textContent='데이터가 너무 많아 URL 생성에 실패했습니다.';}
   document.getElementById('shareOv').classList.add('open');
 }
 function closeShare(){document.getElementById('shareOv').classList.remove('open');}
