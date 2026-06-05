@@ -184,6 +184,7 @@ body{font-family:'DM Sans','Noto Sans KR',sans-serif;background:var(--bg);color:
   .grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
 }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
 </head>
 <body>
 
@@ -374,7 +375,7 @@ function init(){
   const p=new URLSearchParams(location.search), d=p.get('data');
   if(d){
     viewOnly=true;
-    try{const x=JSON.parse(decodeURIComponent(atob(d)));items=normalizeItems(x.items);allTags=x.tags||[];}catch(e){}
+    try{const x=JSON.parse(LZString.decompressFromEncodedURIComponent(d)||decodeURIComponent(atob(d)));items=normalizeItems(x.items);allTags=x.tags||[];}catch(e){}
     document.getElementById('voBanner').style.display='flex';
     document.getElementById('headerActions').innerHTML=`<a href="${location.origin}${location.pathname}" class="btn pri"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>내 컬렉션 만들기</a>`;
   } else {
@@ -684,7 +685,8 @@ function delTag(t){
 // ─── share ───────────────────────────────
 function openShare(){
   try{
-    const enc=btoa(encodeURIComponent(JSON.stringify({items,tags:allTags})));
+    const json=JSON.stringify({items,tags:allTags});
+    const enc=LZString.compressToEncodedURIComponent(json);
     document.getElementById('suBox').textContent=`${location.origin}${location.pathname}?data=${enc}`;
   }catch(e){document.getElementById('suBox').textContent='데이터가 너무 많아 URL 생성에 실패했습니다.';}
   document.getElementById('shareOv').classList.add('open');
