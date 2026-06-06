@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>booth.shelf</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#faf9f7;--surface:#fff;--surface2:#f4f2ef;
+  --border:#e8e4de;--border2:#d4cfc7;
+  --text:#1a1816;--text2:#6b6560;--text3:#9e9892;
+  --pink:#f28fa3;--pink-l:#fdeef2;--pink-m:#f9d4db;
+  --blue:#3b7dd8;--blue-l:#eef4fd;
+  --green:#3a8a3a;--green-l:#eef7ee;
+  --r:10px;--rl:14px;--rxl:18px;
+  --sh:0 1px 3px rgba(0,0,0,.06),0 4px 12px rgba(0,0,0,.04);
+  --sh2:0 4px 16px rgba(0,0,0,.1),0 1px 4px rgba(0,0,0,.06);
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#141210;--surface:#1e1c19;--surface2:#252220;
+  --border:#302d29;--border2:#3d3935;
+  --text:#f0ede8;--text2:#9e9892;--text3:#6b6560;
+  --pink-l:#2a1820;--blue-l:#141e2e;--green-l:#141f14;
+  --sh:0 1px 3px rgba(0,0,0,.3),0 4px 12px rgba(0,0,0,.2);
+  --sh2:0 4px 16px rgba(0,0,0,.4),0 1px 4px rgba(0,0,0,.3);
+}}
+body{font-family:'DM Sans','Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.6}
+
+/* header */
+.hdr{position:sticky;top:0;z-index:50;background:var(--surface);border-bottom:1px solid var(--border);padding:0 2rem;height:56px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.logo{font-size:17px;font-weight:600;letter-spacing:-.5px}.logo .dot{color:var(--pink)}
+.hdr-acts{display:flex;gap:8px;align-items:center}
+.main{max-width:1100px;margin:0 auto;padding:2rem 1.5rem 4rem}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--r);border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap}
+.btn:hover{background:var(--surface2)}
+.btn.pri{background:var(--pink);border-color:var(--pink);color:#fff}
+.btn.pri:hover{background:#e87a91;border-color:#e87a91}
+.btn.dng{border-color:#fca5a5;color:#dc2626}
+.btn.dng:hover{background:#fef2f2}
+.btn svg{width:15px;height:15px;flex-shrink:0}
+
+/* filter rows */
+.frow{display:flex;align-items:center;gap:8px;margin-bottom:.75rem;flex-wrap:wrap}
+.flbl{font-size:12px;color:var(--text3)}
+.chip{padding:5px 13px;border-radius:20px;border:1px solid var(--border2);background:var(--surface);font-size:12px;font-weight:500;cursor:pointer;color:var(--text2);font-family:inherit;transition:all .15s}
+.chip:hover{border-color:var(--pink);color:var(--pink)}
+.chip.on{background:var(--pink);border-color:var(--pink);color:#fff}
+.chip.bl:hover{border-color:var(--blue);color:var(--blue)}
+.chip.bl.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.cnt{font-size:12px;color:var(--text3);margin-left:auto}
+
+.trow{display:flex;align-items:center;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--rl)}
+.trow.hide{display:none}
+.trow-lbl{font-size:12px;color:var(--text3);white-space:nowrap}
+
+/* select bar */
+.selbar{display:none;align-items:center;gap:10px;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);margin-bottom:1rem;box-shadow:var(--sh);flex-wrap:wrap}
+.selbar.on{display:flex}
+.selbar-lbl{font-size:13px;font-weight:500;color:var(--text2);flex:1;min-width:80px}
+.selbar-lbl strong{color:var(--pink)}
+
+/* grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-top:1.25rem}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rxl);overflow:hidden;transition:box-shadow .2s,transform .2s,border-color .2s;box-shadow:var(--sh);position:relative}
+.card:hover{box-shadow:var(--sh2);transform:translateY(-2px);border-color:var(--border2)}
+.card.sel{border-color:var(--pink)!important;box-shadow:0 0 0 2px var(--pink-m),var(--sh)!important}
+.chkbox{position:absolute;top:8px;left:8px;width:22px;height:22px;border-radius:6px;border:2px solid rgba(255,255,255,.8);background:rgba(255,255,255,.25);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;cursor:pointer;z-index:10;transition:all .15s;box-shadow:0 1px 4px rgba(0,0,0,.15)}
+.chkbox svg{width:12px;height:12px;color:#fff;opacity:0;transition:opacity .1s}
+.card.sel .chkbox{background:var(--pink);border-color:var(--pink)}
+.card.sel .chkbox svg{opacity:1}
+.selmode .chkbox{display:flex}
+.thumb-wrap{width:100%;aspect-ratio:1;overflow:hidden;background:var(--surface2);cursor:pointer;position:relative}
+.thumb{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s}
+.thumb-wrap:hover .thumb{transform:scale(1.04)}
+.thumb-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--text3)}
+.thumb-ph svg{width:32px;height:32px;opacity:.4}
+.cbody{padding:10px 12px 12px}
+.ctitle{font-size:12px;font-weight:600;color:var(--text);line-height:1.4;margin-bottom:7px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ctags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:9px}
+.tag{padding:2px 7px;border-radius:10px;font-size:10px;font-weight:600}
+.tag.cat{background:var(--pink-l);color:var(--pink)}
+.tag.chr{background:var(--blue-l);color:var(--blue)}
+.cacts{display:flex;gap:5px}
+.ibtn{width:28px;height:28px;border-radius:8px;border:1px solid var(--border);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);transition:all .15s;flex-shrink:0}
+.ibtn svg{width:14px;height:14px}
+.ibtn:hover{background:var(--surface2);border-color:var(--border2);color:var(--text)}
+.ibtn.dng:hover{background:#fef0f0;border-color:#fca5a5;color:#dc2626}
+
+/* empty */
+.empty{grid-column:1/-1;text-align:center;padding:5rem 2rem;color:var(--text3)}
+.empty svg{width:48px;height:48px;margin:0 auto 16px;display:block;opacity:.3}
+.empty h3{font-size:15px;font-weight:600;margin-bottom:6px;color:var(--text2)}
+.empty p{font-size:13px}
+
+/* modal */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+.ov.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--rxl);padding:1.75rem;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2);animation:up .2s ease}
+@keyframes up{from{transform:translateY(12px);opacity:0}to{transform:translateY(0);opacity:1}}
+.mhd{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem}
+.mhd h2{font-size:16px;font-weight:600}
+.mcls{width:28px;height:28px;border:none;background:none;cursor:pointer;color:var(--text3);display:flex;align-items:center;justify-content:center;border-radius:6px;transition:all .15s}
+.mcls:hover{background:var(--surface2);color:var(--text)}
+.mcls svg{width:16px;height:16px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:5px}
+.field input,.field select{width:100%;border:1px solid var(--border2);border-radius:var(--r);padding:9px 11px;font-size:13px;font-family:inherit;color:var(--text);background:var(--surface2);transition:border-color .15s}
+.field input:focus,.field select:focus{outline:none;border-color:var(--pink);background:var(--surface)}
+.field select{cursor:pointer}
+.mft{display:flex;gap:8px;justify-content:flex-end;margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border)}
+
+/* tag picker */
+.tpicker{border:1px solid var(--border2);border-radius:var(--r);background:var(--surface2);overflow:hidden}
+.tp-sel{min-height:40px;padding:6px 10px;display:flex;flex-wrap:wrap;gap:5px;align-items:center;border-bottom:1px solid var(--border)}
+.tp-sel.emp::before{content:'선택된 태그 없음';font-size:12px;color:var(--text3)}
+.tp-inrow{display:flex;gap:6px;padding:8px 10px;border-bottom:1px solid var(--border);align-items:center}
+.tp-inrow input{flex:1;border:1px solid var(--border2);border-radius:var(--r);padding:6px 10px;font-size:13px;font-family:inherit;color:var(--text);background:var(--surface);transition:border-color .15s}
+.tp-inrow input:focus{outline:none;border-color:var(--pink)}
+.tp-inrow .btn{padding:6px 10px;font-size:12px}
+.tp-opts{display:flex;flex-wrap:wrap;gap:6px;padding:10px;max-height:130px;overflow-y:auto}
+.topt{padding:4px 10px;border-radius:20px;border:1px solid var(--border2);background:var(--surface);font-size:12px;font-weight:500;cursor:pointer;color:var(--text2);font-family:inherit;transition:all .15s}
+.topt:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-l)}
+.topt.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.topt.none{cursor:default;color:var(--text3);border-color:transparent;background:transparent;font-size:12px}
+.tpill{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;background:var(--blue-l);border-radius:10px;font-size:11px;font-weight:600;color:var(--blue)}
+.tpill button{border:none;background:none;cursor:pointer;color:var(--blue);font-size:14px;line-height:1;padding:0;opacity:.7}
+.tpill button:hover{opacity:1}
+
+/* tag manage */
+.tm-list{display:flex;flex-direction:column;gap:6px;max-height:300px;overflow-y:auto;margin-bottom:1rem}
+.tm-item{display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--surface2);border-radius:var(--r)}
+.tm-item span{flex:1;font-size:13px}
+.tm-cnt{font-size:11px;color:var(--text3);background:var(--border);padding:1px 7px;border-radius:10px}
+.tm-edit-input{flex:1;border:1px solid var(--pink);border-radius:var(--r);padding:5px 9px;font-size:13px;font-family:inherit;color:var(--text);background:var(--surface);outline:none}
+.tm-add{display:flex;gap:8px}
+.tm-add input{flex:1;border:1px solid var(--border2);border-radius:var(--r);padding:8px 10px;font-size:13px;font-family:inherit;color:var(--text);background:var(--surface2)}
+.tm-add input:focus{outline:none;border-color:var(--pink)}
+
+/* share */
+.su-box{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:10px 13px;font-size:11px;font-family:'Courier New',monospace;color:var(--text2);word-break:break-all;line-height:1.5;max-height:80px;overflow-y:auto;margin-top:10px}
+.s-info{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--text2);background:var(--green-l);border-radius:var(--r);padding:10px 12px;border-left:2px solid var(--green)}
+.s-info svg{width:14px;height:14px;flex-shrink:0;margin-top:1px;color:var(--green)}
+
+/* view-only */
+.vo-banner{background:var(--blue-l);border-bottom:1px solid #b8d4f5;padding:10px 2rem;font-size:13px;color:var(--blue);display:flex;align-items:center;gap:8px;font-weight:500}
+.vo-banner svg{width:16px;height:16px;flex-shrink:0}
+
+/* sort buttons */
+.sort-btn{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border:none;background:transparent;font-size:12px;font-weight:500;cursor:pointer;color:var(--text2);font-family:inherit;transition:all .15s;white-space:nowrap}
+.sort-btn svg{width:13px;height:13px;flex-shrink:0}
+.sort-btn:hover{color:var(--text);background:var(--surface2)}
+.sort-btn.on{background:var(--pink-l);color:var(--pink)}
+
+/* release date on card */
+.cdate{font-size:10px;color:var(--text3);margin-bottom:6px}
+
+/* custom date input */
+.date-input-wrap{display:flex;align-items:center;gap:4px}
+.date-seg{width:42px;border:1px solid var(--border2);border-radius:var(--r);padding:8px 0;font-size:13px;font-family:inherit;color:var(--text);background:var(--surface2);text-align:center;transition:border-color .15s}
+.date-seg.yr{width:36px}
+.date-seg:focus{outline:none;border-color:var(--pink);background:var(--surface)}
+.date-sep{font-size:13px;color:var(--text3);font-weight:600}
+
+/* category chip picker in modal */
+.cat-chips{display:flex;flex-wrap:wrap;gap:6px}
+.copt{padding:5px 13px;border-radius:20px;border:1px solid var(--border2);background:var(--surface2);font-size:12px;font-weight:500;cursor:pointer;color:var(--text2);font-family:inherit;transition:all .15s}
+.copt:hover{border-color:var(--pink);color:var(--pink)}
+.copt.on{background:var(--pink);border-color:var(--pink);color:#fff}
+
+@media(prefers-color-scheme:dark){
+  input[type="date"]{color-scheme:dark}
+}
+
+@media(max-width:640px){
+  .hdr{padding:0 1rem}
+  .main{padding:1.25rem 1rem 3rem}
+  .hdr-acts .btn span{display:none}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+}
+</style>
+</head>
+<body>
+
+<header class="hdr" id="siteHeader">
+  <span class="logo">booth<span class="dot">.</span>shelf</span>
+  <div class="hdr-acts" id="headerActions">
+    <button class="btn" onclick="openTagManage()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+      <span>태그 관리</span>
+    </button>
+    <button class="btn" onclick="openShare()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+      <span>공유</span>
+    </button>
+    <button class="btn" id="syncBtn" onclick="syncToGithub()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      <span>GitHub 저장</span>
+    </button>
+    <button class="btn" onclick="importData()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      <span>불러오기</span>
+    </button>
+    <button class="btn" onclick="exportData()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 14 12 9 7 14"/><line x1="12" y1="9" x2="12" y2="21"/></svg>
+      <span>내보내기</span>
+    </button>
+    <button class="btn pri" onclick="openAdd()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <span>에셋 추가</span>
+    </button>
+  </div>
+</header>
+
+<div class="vo-banner" id="voBanner" style="display:none">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+  공유된 컬렉션입니다 — 보기 전용
+</div>
+
+<main class="main">
+  <!-- 카테고리 필터 -->
+  <div class="frow">
+    <span class="flbl">카테고리</span>
+    <button class="chip on" onclick="setFilter('all',this)">전체</button>
+    <button class="chip" onclick="setFilter('아바타',this)">아바타</button>
+    <button class="chip" onclick="setFilter('헤어',this)">헤어</button>
+    <button class="chip" onclick="setFilter('의상',this)">의상</button>
+    <button class="chip" onclick="setFilter('악세사리',this)">악세사리</button>
+    <button class="chip" onclick="setFilter('텍스쳐',this)">텍스쳐</button>
+    <button class="chip" onclick="setFilter('기타',this)">기타</button>
+    <span class="cnt" id="itemCount">0개</span>
+    <button class="btn" id="selBtn" onclick="toggleSel()" style="margin-left:auto">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      선택
+    </button>
+    <div style="display:flex;gap:4px;border:1px solid var(--border2);border-radius:var(--r);overflow:hidden;flex-shrink:0">
+      <button class="sort-btn on" id="sortAdded" onclick="setSort('added')" title="추가순">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>추가순
+      </button>
+      <button class="sort-btn" id="sortRelease" onclick="setSort('release')" title="출시순">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>출시순
+      </button>
+    </div>
+  </div>
+
+  <!-- 캐릭터 태그 필터 -->
+  <div class="trow hide" id="tagFilterRow">
+    <span class="trow-lbl">캐릭터</span>
+    <div id="tagFilterChips"></div>
+  </div>
+
+  <!-- 선택 모드 바 -->
+  <div class="selbar" id="selBar">
+    <span class="selbar-lbl"><strong id="selCount">0</strong>개 선택됨</span>
+    <button class="btn" onclick="selAll()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>전체 선택
+    </button>
+    <button class="btn" onclick="deselAll()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>선택 해제
+    </button>
+    <button class="btn dng" onclick="delSelected()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>선택 삭제
+    </button>
+    <button class="btn" onclick="toggleSel()">취소</button>
+  </div>
+
+  <div class="grid" id="grid"></div>
+</main>
+
+<!-- ══ 에셋 추가/편집 모달 ══ -->
+<div class="ov" id="editOv" onclick="closeEditOv(event)">
+  <div class="modal">
+    <div class="mhd">
+      <h2 id="modalTitle">에셋 추가</h2>
+      <button class="mcls" onclick="closeEdit()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="field"><label>에셋 이름 *</label><input type="text" id="fName" placeholder="예) School Sailor"></div>
+    <div class="field"><label>샵 이름</label><input type="text" id="fShop" placeholder="예) 星屑工房"></div>
+    <div class="field"><label>BOOTH 링크</label><input type="url" id="fUrl" placeholder="https://booth.pm/ko/items/..."></div>
+    <div class="field"><label>썸네일 이미지 URL</label><input type="url" id="fImg" placeholder="https://..."></div>
+    <div class="field">
+      <label>출시일 <span style="font-weight:400;color:var(--text3)">(선택 · YY.MM.DD)</span></label>
+      <div class="date-input-wrap">
+        <input class="date-seg yr" id="dYY" maxlength="2" placeholder="YY" inputmode="numeric" oninput="dateInput(this,'dMM',2)">
+        <span class="date-sep">.</span>
+        <input class="date-seg" id="dMM" maxlength="2" placeholder="MM" inputmode="numeric" oninput="dateInput(this,'dDD',2)" onkeydown="dateBack(event,this,'dYY')">
+        <span class="date-sep">.</span>
+        <input class="date-seg" id="dDD" maxlength="2" placeholder="DD" inputmode="numeric" oninput="dateInput(this,null,2)" onkeydown="dateBack(event,this,'dMM')">
+      </div>
+    </div>
+    <div class="field">
+      <label>카테고리</label>
+      <div class="cat-chips" id="catChips">
+        <button type="button" class="copt on" onclick="setCat(this,'아바타')">아바타</button>
+        <button type="button" class="copt" onclick="setCat(this,'헤어')">헤어</button>
+        <button type="button" class="copt" onclick="setCat(this,'의상')">의상</button>
+        <button type="button" class="copt" onclick="setCat(this,'악세사리')">악세사리</button>
+        <button type="button" class="copt" onclick="setCat(this,'텍스쳐')">텍스쳐</button>
+        <button type="button" class="copt" onclick="setCat(this,'기타')">기타</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>캐릭터 태그</label>
+      <div class="tpicker">
+        <div class="tp-sel emp" id="tpSel"></div>
+        <div class="tp-inrow">
+          <input type="text" id="tpNewInput" placeholder="새 태그 직접 입력 후 추가" onkeydown="tpNewKey(event)">
+          <button class="btn pri" onclick="tpAddNew()">추가</button>
+        </div>
+        <div class="tp-opts" id="tpOpts"></div>
+      </div>
+    </div>
+    <div class="mft">
+      <button class="btn" onclick="closeEdit()">취소</button>
+      <button class="btn pri" onclick="saveItem()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 태그 관리 모달 ══ -->
+<div class="ov" id="tagMgOv" onclick="closeTagMgOv(event)">
+  <div class="modal">
+    <div class="mhd">
+      <h2>캐릭터 태그 관리</h2>
+      <button class="mcls" onclick="closeTagMg()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="tm-list" id="tmList"></div>
+    <div class="tm-add">
+      <input type="text" id="tmInput" placeholder="새 캐릭터 태그 이름" onkeydown="tmKey(event)">
+      <button class="btn pri" onclick="tmAdd()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>추가
+      </button>
+    </div>
+    <div class="mft"><button class="btn pri" onclick="closeTagMg()">완료</button></div>
+  </div>
+</div>
+
+<!-- ══ 공유 모달 ══ -->
+<div class="ov" id="shareOv" onclick="closeShareOv(event)">
+  <div class="modal">
+    <div class="mhd">
+      <h2>공유 링크 생성</h2>
+      <button class="mcls" onclick="closeShare()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="s-info">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      받는 사람은 보기만 할 수 있습니다. 에셋을 추가/수정할 때마다 <b>① data.json 내보내기 → ② GitHub에 업로드</b>가 필요해요.
+    </div>
+    <div class="su-box" id="suBox">https://hamg-web.github.io/booth-shelf/viewer.html</div>
+    <div class="mft">
+      <button class="btn" onclick="exportForGithub()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 14 12 9 7 14"/><line x1="12" y1="9" x2="12" y2="21"/></svg>
+        ① data.json 내보내기
+      </button>
+      <button class="btn" onclick="closeShare()">닫기</button>
+      <button class="btn pri" id="copyBtn" onclick="copyUrl()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>② URL 복사
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ GitHub 설정 모달 ══ -->
+<div class="ov" id="ghOv" onclick="closeGhOv(event)">
+  <div class="modal">
+    <div class="mhd">
+      <h2>GitHub 설정</h2>
+      <button class="mcls" onclick="closeGh()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:14px">GitHub Personal Access Token을 입력하면 버튼 한 번으로 뷰어가 자동 업데이트돼요.</p>
+    <div class="field">
+      <label>Personal Access Token</label>
+      <input type="password" id="ghToken" placeholder="ghp_...">
+    </div>
+    <div class="field">
+      <label>GitHub 유저네임</label>
+      <input type="text" id="ghUser" placeholder="hamg-web">
+    </div>
+    <div class="field">
+      <label>레포지토리 이름</label>
+      <input type="text" id="ghRepo" placeholder="booth-shelf-viewer">
+    </div>
+    <div class="mft">
+      <button class="btn" onclick="closeGh()">취소</button>
+      <button class="btn pri" onclick="saveGhSettings()">저장</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── state ───────────────────────────────
+let items=[], allTags=[], selTags=[];
+let editId=null, curCat='all', curTagF='', curSort='added', viewOnly=false, selMode=false;
+let selIds=new Set();
+const SK='boothShelf_v2';
+
+function fixUrl(u){
+  if(!u) return '';
+  if(u.startsWith('http')) return u;
+  return 'https://'+u;
+}
+function normalizeItems(arr){
+  return (arr||[]).map(i=>({...i, url:fixUrl(i.url)}));
+}
+
+// ─── init / save ─────────────────────────
+function init(){
+  const p=new URLSearchParams(location.search), d=p.get('data');
+  if(d){
+    viewOnly=true;
+    try{const x=JSON.parse(decodeURIComponent(atob(d)));items=normalizeItems(x.items);allTags=x.tags||[];}catch(err){}
+    document.getElementById('voBanner').style.display='flex';
+    document.getElementById('headerActions').innerHTML=`<a href="${location.origin}${location.pathname}" class="btn pri"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>내 컬렉션 만들기</a>`;
+  } else {
+    try{
+      const r=localStorage.getItem(SK);
+      if(r){const x=JSON.parse(r);items=normalizeItems(x.items);allTags=x.tags||[];}
+      else{
+        const old=localStorage.getItem('boothShelf_v1');
+        if(old){const x=JSON.parse(old);items=normalizeItems(x.items||x);allTags=x.tags||[];}
+      }
+    }catch(e){}
+    if(!items.length){
+      const seed={"items":[{"id":"mq10434knxnvf","name":"【VRC Hair】 Vela_Hair","shop":"Kyee_N","url":"https://booth.pm/ko/items/6759576","img":"https://booth.pximg.net/bee39324-9834-4b08-a88b-1eed5d82e78f/i/6759576/b3b664ea-278d-4ad8-9d77-2b04b0039bdf_base_resized.jpg","releaseDate":"2025-04-01","category":"헤어","charTags":["마누카","쇼콜라","밀피","아이리","시나노","시오","밀티나"]},{"id":"mq0zxzfn0p0hu","name":"【VRC想定】Lop Rabbit Two side Twin Tail Hair","shop":"GLAY Unknown","url":"https://booth.pm/ko/items/5964376","img":"https://booth.pximg.net/8a7132c0-9c56-4b19-bc31-8242f5390d72/i/5964376/97864b86-7ad7-4940-95e9-b29404ad5b28_base_resized.jpg","releaseDate":"2024-09-06","category":"헤어","charTags":["셀레스티아","마누카","시오","아이리"]},{"id":"mq0zwx13s6yt0","name":"ミルフィ Milfy / オリジナル3Dモデル","shop":"ぷらすわん","url":"https://booth.pm/ko/items/6571299","img":"https://booth.pximg.net/1ae5d9f5-29a4-4574-ab86-a316c22db92a/i/6571299/7bda05bb-f9d5-45a8-811a-b95ac555beb8_base_resized.jpg","releaseDate":"2025-03-15","category":"아바타","charTags":["밀피"]},{"id":"mq0zwcfap70kj","name":"【7アバター対応】🐇Evergrace_Bunny🐇","shop":"cherry neru","url":"https://booth.pm/ko/items/6115033","img":"https://booth.pximg.net/b1574cea-1837-4fdb-9654-27cc43c52f3a/i/6115033/81d9aecb-07a2-497c-9153-047bfdebf884_base_resized.jpg","releaseDate":"2024-09-20","category":"의상","charTags":["마누카"]},{"id":"mq0zvppergo5y","name":"🩷『Lop Ear Mine』ロップイヤーマイン🩷【23アバター対応】","shop":"てんぱすおおもり","url":"https://booth.pm/ko/items/6721544","img":"https://booth.pximg.net/2bbfc6cd-c88d-4f80-8d45-2066fcd51c78/i/6721544/42b960b9-0121-43aa-a720-27639dbf2c9b_base_resized.jpg","releaseDate":"2025-03-23","category":"의상","charTags":["밀피","마누카"]},{"id":"mq0zulzasskxn","name":"【6アバター対応】 P♡P.Hair 06 【VRChat用ヘアモデル】","shop":"P♡P.Hair","url":"https://booth.pm/ko/items/5942940","img":"https://booth.pximg.net/b8ab9495-6923-449f-9757-0950a5895528/i/5942940/96317881-d5f3-437d-bae8-a46406a1fd49_base_resized.jpg","releaseDate":"2024-07-28","category":"헤어","charTags":["마누카","시나노","아이리"]},{"id":"mq0zt5hs1bcen","name":"【MANUKA】Makeup＆Eye Texture","shop":"Cute:command","url":"https://booth.pm/ko/items/6440206","img":"https://booth.pximg.net/6c299c0b-43b2-459f-9a04-9c7a0837d412/i/6440206/6e7c2894-b73f-4eaa-baf4-8abc4b69b4fb_base_resized.jpg","releaseDate":"","category":"텍스쳐","charTags":["마누카"]},{"id":"mq0zspdlwc2xr","name":"[3Dヘアモデル] Lunar two-side up","shop":"ANKA","url":"https://booth.pm/ko/items/5967904","img":"https://booth.pximg.net/343455c8-13fa-4871-aa62-61ca786c23f1/i/5967904/9d67bb2e-5c6e-4c7e-ade8-7bb0c635ca43_base_resized.jpg","releaseDate":"","category":"헤어","charTags":["아이리","마누카"]},{"id":"mq0zs7zcnlthd","name":"【7アバター対応】 ♡ 𝐀𝐦𝐞𝐭𝐡𝐲𝐬𝐭 ♡ 【VRChat向け衣装モデル】","shop":"PINK♡PUDDING","url":"https://booth.pm/ko/items/6536120","img":"https://booth.pximg.net/e2febaba-cfd6-4285-86fa-a25e19651f9d/i/6536120/408e5559-43bb-4f33-9ad3-038e63ca28db_base_resized.jpg","releaseDate":"","category":"의상","charTags":["시나노","마누카","아이리","쇼콜라","시오"]},{"id":"mq0zrn5po6x1x","name":"【12 avatars / VRC Hair】Charm Short Hair","shop":"BLACK SMITH〈ﾌﾞﾗｯｸｽﾐｽ〉","url":"https://booth.pm/ko/items/6504954","img":"https://booth.pximg.net/e4e799fd-4fdd-458b-ab9d-71d0527ccf96/i/6504954/4aa0b306-dcbf-4a5d-9db5-f51f7183694c_base_resized.jpg","releaseDate":"","category":"헤어","charTags":["시나노","마누카","셀레스티아","시오","아이리"]},{"id":"mq0zqtgzwxck9","name":"【15アバター対応】❄️Snow_Bun❄️","shop":"cherry neru","url":"https://booth.pm/ko/items/6493886","img":"https://booth.pximg.net/b1574cea-1837-4fdb-9654-27cc43c52f3a/i/6493886/cfd1ab95-8116-43b1-bb55-4a45816d213c_base_resized.jpg","releaseDate":"","category":"의상","charTags":["시오","시나노","아이리","마누카","셀레스티아"]},{"id":"mq0zpgudryl8a","name":"【6アバター対応】 P♡P.Hair 10 【VRChat用ヘアモデル】","shop":"P♡P.Hair","url":"https://booth.pm/ko/items/6378023","img":"https://booth.pximg.net/b8ab9495-6923-449f-9757-0950a5895528/i/6378023/9ef43672-b7b4-4d5d-ae6d-fbc1e30edaca_base_resized.jpg","releaseDate":"","category":"헤어","charTags":["시나노","아이리","시오","쇼콜라","마누카"]},{"id":"mq0zoutstlfcf","name":"【7アバター対応】 𝐏♡𝐏.𝐇𝐚𝐢𝐫 𝟏𝟏 【VRChat用ヘアモデル】","shop":"P♡P.Hair","url":"https://booth.pm/ko/items/6538150","img":"https://booth.pximg.net/b8ab9495-6923-449f-9757-0950a5895528/i/6538150/ce49555b-daad-4e06-bf21-47b82766f0fe_base_resized.jpg","releaseDate":"","category":"헤어","charTags":["시나노","마누카","아이리","쇼콜라","시오"]},{"id":"mq0zo0dkuhbfr","name":"KKAT【10アバター対応】","shop":"Ganger","url":"https://booth.pm/ko/items/6556387","img":"https://booth.pximg.net/152d348c-1557-4ab0-8ce6-d5a57790afd2/i/6556387/4e69009f-a1c5-476e-aa0e-5e614d7c2875_base_resized.jpg","releaseDate":"","category":"의상","charTags":["아이리","시나노","마누카","쇼콜라","셀레스티아"]},{"id":"mq0zmlmsp7xc1","name":"[Chocolat] Banhada ~ Make up Texture + Bunny Eye Texture ~","shop":"XO_XO","url":"https://booth.pm/ko/items/6491407","img":"https://booth.pximg.net/ea1c03c7-73c7-4eeb-8620-6a21b54e1274/i/6491407/04ac8efc-173c-489e-83fd-aabc00facb98_base_resized.jpg","releaseDate":"","category":"텍스쳐","charTags":["쇼콜라"]},{"id":"mq0zm52dseyuy","name":"Wavy low twintail","shop":"4o4o","url":"https://booth.pm/ko/items/6462709","img":"https://booth.pximg.net/fa55237d-8e28-4c51-a170-abbfb3754d09/i/6462709/42917506-d2e8-4a67-ba92-f7ded5ce9ffa_base_resized.jpg","releaseDate":"","category":"헤어","charTags":["마누카","시오","시나노","쇼콜라"]},{"id":"mq0zle0ummfyi","name":"ショコラ -Chocolat-【オリジナル3Dモデル】","shop":"あまとうさぎ","url":"https://booth.pm/ko/items/6405390","img":"https://booth.pximg.net/61a3b2d7-b4b1-4f97-9e48-ffe959b26ae9/i/6405390/6e6332b4-d56c-4d2f-8f23-328f702949c8_base_resized.jpg","releaseDate":"","category":"아바타","charTags":["쇼콜라"]},{"id":"mq0zkxrf2u6nm","name":"【VRC向け】Nerumae Hair【5アバター対応】","shop":"くれこのさんD","url":"https://booth.pm/ko/items/5417522","img":"https://booth.pximg.net/53736367-44ab-4339-b951-90f318f8c00d/i/5417522/91fb423e-719a-4f47-8016-6f7625024129_base_resized.jpg","releaseDate":"","category":"헤어","charTags":["마누카"]},{"id":"mq0zj6mglau9n","name":"【6アバター対応】✨Ivory_Momentum✨","shop":"cherry neru","url":"https://booth.pm/ko/items/5499142","img":"https://booth.pximg.net/b1574cea-1837-4fdb-9654-27cc43c52f3a/i/5499142/0e372916-5cfe-4403-854a-e83dd3afb289_base_resized.jpg","releaseDate":"","category":"의상","charTags":["마누카"]},{"id":"mq0zik24r5n13","name":"[11アバター] Doughnut Ribbon Hair","shop":"TOYO","url":"https://booth.pm/ko/items/6221496","img":"https://booth.pximg.net/8b492637-242b-4964-ab33-b0ffa8daea90/i/6221496/c6d47ec6-7041-4cbe-b1e6-7014fe25c3b9_base_resized.jpg","releaseDate":"","category":"헤어","charTags":["마누카","마야","시나노","키펠","셀레스티아","시오","쇼콜라"]},{"id":"mq0zh31dwtzgk","name":"✧･ﾟ•.MIRUKURU.+:｡:✧ - CREPSCOLO - クレプスコーロ🤍","shop":"mirukuru","url":"https://booth.pm/ko/items/6010473","img":"https://booth.pximg.net/c889f06f-d07c-42d1-a258-98829fa27cf4/i/6010473/c91e70e6-d51b-4ac2-86e0-ebeab0a27ac7_base_resized.jpg","releaseDate":"","category":"의상","charTags":["시나노","마누카"]},{"id":"mq0zg0o4hp0fi","name":"【 11アバター対応】 Chibi Girl Cutie Braid [REMAKE]","shop":"SOUR FLAVOR","url":"https://booth.pm/ko/items/6427396","img":"https://booth.pximg.net/428157be-1b8a-4d0e-a3e0-b9f7e8f7c245/i/6427396/cae38d1f-44d7-405f-835b-57b47ad78e8c_base_resized.jpg","releaseDate":"","category":"헤어","charTags":["마누카","시오","쇼콜라","시나노","밀피","키펠","밀티나"]},{"id":"mq0zeycecrq6n","name":"【10アバター対応】Today Sports Uniform","shop":"todaycloth","url":"https://booth.pm/ko/items/6013373","img":"https://booth.pximg.net/e5120ba0-e001-45d9-97a2-9444e62c88a6/i/6013373/aaab61a2-c879-4576-ba7d-c58f0ec9b913_base_resized.jpg","releaseDate":"","category":"의상","charTags":["시오","셀레스티아","마누카","아이리","시나노","루미나"]},{"id":"mq0zc7d506xi9","name":"【8 avatars】【VRC Hair】♥ Kismet_Hair ♥","shop":"Nanaha","url":"https://booth.pm/ko/items/6425877","img":"https://booth.pximg.net/48ebe0c6-8767-42a8-a880-1c0164a7a48d/i/6425877/fdadd940-02e4-4f2c-a043-1f8a35d13dd0_base_resized.jpg","releaseDate":"","category":"헤어","charTags":["아이리","마누카","셀레스티아","시나노","시오"]},{"id":"mq0zbctnzb80e","name":"[ shinano対応 ] fuwafuwa make up & face animation 🍥","shop":"ʚ more Heart ɞ","url":"https://booth.pm/ko/items/6224552","img":"https://booth.pximg.net/aaf2d844-2340-40d0-b7b1-90d58cd62484/i/6224552/2a9d7159-4658-411b-a79a-a7340411ed34_base_resized.jpg","releaseDate":"","category":"텍스쳐","charTags":["시나노"]},{"id":"mq0za42j4e4j2","name":"【8アバター対応】 ♥ heart nail 03 ♥","shop":"SIRO","url":"https://booth.pm/ko/items/5718331","img":"https://booth.pximg.net/10bb72b3-766c-4bf8-83ac-b193a763bca8/i/5718331/5ad6bc7d-d37a-4c7a-b493-03a4ecf010f6_base_resized.jpg","releaseDate":"","category":"악세사리","charTags":["시나노"]},{"id":"mq0z8zql9krj1","name":"【5アバター対応】 P♡P.Hair 03 【VRChat用ヘアモデル】","shop":"P♡P.Hair","url":"https://booth.pm/ko/items/5637350","img":"https://booth.pximg.net/b8ab9495-6923-449f-9757-0950a5895528/i/5637350/005fc224-8dcc-489c-9371-95537136be9c_base_resized.jpg","releaseDate":"2024-04-14","category":"헤어","charTags":["마누카","시오"]}],"tags":["루미나","리나시타","리리카","마누카","마야","마요","밀티나","밀피","셀레스티아","쇼콜라","시나노","시오","아이리","키펠","퓨엣"]};
+      items=seed.items; allTags=seed.tags;
+      try{localStorage.setItem(SK,JSON.stringify({items,tags:allTags}));}catch(e){}
+    }
+  }
+  render();
+}
+function save(){
+  if(!viewOnly) try{localStorage.setItem(SK,JSON.stringify({items,tags:allTags}));}catch(e){}
+  render();
+}
+
+// ─── render ──────────────────────────────
+function render(){
+  let fil=curCat==='all'?items:items.filter(i=>i.category===curCat);
+  if(curTagF) fil=fil.filter(i=>(i.charTags||[]).includes(curTagF));
+
+  // 정렬
+  fil=[...fil];
+  const CAT_ORDER=['아바타','헤어','의상','악세사리','텍스쳐','기타'];
+  if(curSort==='release'){
+    fil.sort((a,b)=>{
+      if(!a.releaseDate && !b.releaseDate) return 0;
+      if(!a.releaseDate) return 1;
+      if(!b.releaseDate) return -1;
+      return b.releaseDate.localeCompare(a.releaseDate);
+    });
+  } else if(curCat==='all'){
+    // 전체 보기 + 추가순 → 카테고리 순서로 그룹핑
+    fil.sort((a,b)=>CAT_ORDER.indexOf(a.category)-CAT_ORDER.indexOf(b.category));
+  }
+
+  document.getElementById('itemCount').textContent=fil.length+'개';
+  renderTagFilter();
+  const g=document.getElementById('grid');
+  if(!fil.length){
+    g.innerHTML=`<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg><h3>${viewOnly?'에셋이 없습니다':'아직 에셋이 없어요'}</h3><p>${viewOnly?'공유된 컬렉션이 비어있습니다.':'오른쪽 위 <b>에셋 추가</b> 버튼을 눌러 시작하세요.'}</p></div>`;
+    return;
+  }
+  g.innerHTML=fil.map(item=>{
+    const isSel=selIds.has(item.id);
+    const chTags=(item.charTags||[]).slice(0,3).map(t=>`<span class="tag chr">${e(t)}</span>`).join('');
+    const thumb=item.img?`<img class="thumb" src="${e(item.img)}" alt="${e(item.name)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`:'' ;
+    const phStyle=item.img?'display:none':'';
+    const tc=selMode?`tgl('${item.id}')`:`openLink(this.dataset.url)`;
+    const acts=viewOnly?'':`
+      <button class="ibtn" onclick="openEdit('${item.id}')" title="편집"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+      <button class="ibtn dng" onclick="delItem('${item.id}')" title="삭제"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>`;
+    return `<div class="card${isSel?' sel':''}" id="c-${item.id}">
+      <div class="chkbox" onclick="tgl('${item.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div class="thumb-wrap" data-url="${e(item.url)}" onclick="${tc}">${thumb}<div class="thumb-ph" style="${phStyle}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div></div>
+      <div class="cbody">
+        <div class="ctitle" title="${e(item.name)} — ${e(item.shop)}">${e(item.name)} — ${e(item.shop)}</div>
+        <div class="ctags"><span class="tag cat">${e(item.category)}</span>${chTags}</div>
+        ${item.releaseDate?`<div class="cdate">${item.releaseDate.replace(/^20(\d{2})-(\d{2})-(\d{2})$/,'$1.$2.$3')}</div>`:''}
+        <div class="cacts">
+          <button class="ibtn" data-url="${e(item.url)}" onclick="openLink(this.dataset.url)" title="BOOTH에서 보기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button>
+          ${acts}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  if(selMode) g.classList.add('selmode');
+}
+
+function renderTagFilter(){
+  const used=allTags.filter(t=>items.some(i=>(i.charTags||[]).includes(t)));
+  const row=document.getElementById('tagFilterRow'), con=document.getElementById('tagFilterChips');
+  if(!used.length){row.classList.add('hide');if(!used.includes(curTagF))curTagF='';return;}
+  row.classList.remove('hide');
+  con.innerHTML=used.map(t=>`<button class="chip bl${curTagF===t?' on':''}" onclick="setTagF('${e(t)}')">${e(t)}</button>`).join('');
+}
+
+// ─── filter ──────────────────────────────
+function setFilter(cat,el){
+  curCat=cat;
+  document.querySelectorAll('.frow .chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on'); render();
+}
+function setTagF(t){curTagF=curTagF===t?'':t;render();}
+function setSort(s){
+  curSort=s;
+  document.getElementById('sortAdded').classList.toggle('on',s==='added');
+  document.getElementById('sortRelease').classList.toggle('on',s==='release');
+  render();
+}
+
+// ─── select mode ─────────────────────────
+function toggleSel(){
+  if(viewOnly)return;
+  selMode=!selMode; selIds.clear();
+  document.getElementById('selBtn').classList.toggle('pri',selMode);
+  document.getElementById('selBar').classList.toggle('on',selMode);
+  updSelCnt(); render();
+}
+function tgl(id){
+  if(!selMode)return;
+  selIds.has(id)?selIds.delete(id):selIds.add(id);
+  const c=document.getElementById('c-'+id);
+  if(c) c.classList.toggle('sel',selIds.has(id));
+  updSelCnt();
+}
+function selAll(){
+  const fil=curCat==='all'?items:items.filter(i=>i.category===curCat);
+  fil.forEach(i=>selIds.add(i.id)); render(); updSelCnt();
+}
+function deselAll(){selIds.clear();render();updSelCnt();}
+function updSelCnt(){document.getElementById('selCount').textContent=selIds.size;}
+function delSelected(){
+  if(!selIds.size){alert('선택된 에셋이 없습니다.');return;}
+  if(!confirm(`선택한 ${selIds.size}개 에셋을 삭제할까요?`))return;
+  items=items.filter(i=>!selIds.has(i.id));selIds.clear();updSelCnt();save();
+}
+
+// ─── edit modal ──────────────────────────
+function openAdd(){
+  editId=null; selTags=[];
+  ['fName','fShop','fUrl','fImg','dYY','dMM','dDD'].forEach(id=>document.getElementById(id).value='');
+  setCatChip('아바타');
+  renderTpicker();
+  document.getElementById('modalTitle').textContent='에셋 추가';
+  document.getElementById('editOv').classList.add('open');
+}
+function openEdit(id){
+  const item=items.find(i=>i.id===id); if(!item)return;
+  editId=id; selTags=[...(item.charTags||[])];
+  document.getElementById('fName').value=item.name||'';
+  document.getElementById('fShop').value=item.shop||'';
+  document.getElementById('fUrl').value=item.url||'';
+  document.getElementById('fImg').value=item.img||'';
+  // 날짜 파싱: "26.04.14" or "2026-04-14" 둘 다 처리
+  const rd=item.releaseDate||'';
+  if(rd){
+    const parts=rd.includes('-')?rd.split('-'):[rd.slice(0,2),rd.slice(3,5),rd.slice(6,8)];
+    const yy=parts[0]?parts[0].slice(-2):'';
+    document.getElementById('dYY').value=yy;
+    document.getElementById('dMM').value=parts[1]||'';
+    document.getElementById('dDD').value=parts[2]||'';
+  } else {
+    ['dYY','dMM','dDD'].forEach(id=>document.getElementById(id).value='');
+  }
+  setCatChip(item.category||'아바타');
+  renderTpicker();
+  document.getElementById('modalTitle').textContent='에셋 편집';
+  document.getElementById('editOv').classList.add('open');
+}
+function closeEdit(){document.getElementById('editOv').classList.remove('open');}
+function closeEditOv(ev){if(ev.target===document.getElementById('editOv'))closeEdit();}
+
+function renderTpicker(){
+  const sel=document.getElementById('tpSel');
+  if(selTags.length){
+    sel.classList.remove('emp');
+    sel.innerHTML=selTags.map(t=>`<span class="tpill">${e(t)}<button onclick="tpRm('${e(t)}')" type="button">×</button></span>`).join('');
+  } else {sel.classList.add('emp');sel.innerHTML='';}
+  const opts=document.getElementById('tpOpts');
+  if(!allTags.length){opts.innerHTML=`<span class="topt none">태그 없음 — 새 태그를 직접 입력하거나 태그 관리에서 추가하세요</span>`;return;}
+  opts.innerHTML=allTags.map(t=>`<button class="topt${selTags.includes(t)?' on':''}" onclick="tpTgl('${e(t)}')">${e(t)}</button>`).join('');
+  document.getElementById('tpNewInput').value='';
+}
+function tpTgl(t){selTags.includes(t)?selTags=selTags.filter(x=>x!==t):selTags.push(t);renderTpicker();}
+function tpRm(t){selTags=selTags.filter(x=>x!==t);renderTpicker();}
+function tpNewKey(ev){if(ev.key==='Enter'){ev.preventDefault();tpAddNew();}}
+function tpAddNew(){
+  const v=document.getElementById('tpNewInput').value.trim(); if(!v)return;
+  if(!allTags.includes(v)){allTags.push(v);sortTags();}
+  if(!selTags.includes(v)) selTags.push(v);
+  renderTpicker();
+}
+
+function saveItem(){
+  const name=document.getElementById('fName').value.trim();
+  if(!name){alert('에셋 이름을 입력해주세요.');return;}
+  // 날짜 조합
+  const yy=document.getElementById('dYY').value.trim();
+  const mm=document.getElementById('dMM').value.trim();
+  const dd=document.getElementById('dDD').value.trim();
+  const releaseDate=(yy&&mm&&dd)?`20${yy}-${mm.padStart(2,'0')}-${dd.padStart(2,'0')}`:'';
+  // 카테고리
+  const catEl=document.querySelector('.copt.on');
+  const category=catEl?catEl.textContent:'기타';
+  const item={id:editId||gid(),name,shop:document.getElementById('fShop').value.trim(),url:document.getElementById('fUrl').value.trim(),img:document.getElementById('fImg').value.trim(),releaseDate,category,charTags:[...selTags]};
+  if(editId){const i=items.findIndex(x=>x.id===editId);if(i>-1)items[i]=item;}
+  else items.unshift(item);
+  closeEdit(); save();
+}
+function delItem(id){if(!confirm('이 에셋을 삭제할까요?'))return;items=items.filter(i=>i.id!==id);save();}
+
+// ─── date input helpers ──────────────────
+function dateInput(el, nextId, maxLen){
+  // 숫자만
+  el.value=el.value.replace(/\D/g,'');
+  if(el.value.length>=maxLen && nextId){
+    document.getElementById(nextId).focus();
+    document.getElementById(nextId).select();
+  }
+}
+function dateBack(ev, el, prevId){
+  if(ev.key==='Backspace' && el.value==='' && prevId){
+    ev.preventDefault();
+    const prev=document.getElementById(prevId);
+    prev.focus();
+    prev.setSelectionRange(prev.value.length, prev.value.length);
+  }
+}
+
+// ─── category chip ───────────────────────
+function setCat(el, cat){
+  document.querySelectorAll('.copt').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+}
+function setCatChip(cat){
+  document.querySelectorAll('.copt').forEach(c=>{
+    c.classList.toggle('on', c.textContent===cat);
+  });
+}
+
+// ─── tag manage modal ────────────────────
+function openTagManage(){
+  renderTmList();
+  document.getElementById('tmInput').value='';
+  document.getElementById('tagMgOv').classList.add('open');
+}
+function closeTagMg(){document.getElementById('tagMgOv').classList.remove('open');save();}
+function closeTagMgOv(ev){if(ev.target===document.getElementById('tagMgOv'))closeTagMg();}
+function renderTmList(){
+  const l=document.getElementById('tmList');
+  if(!allTags.length){l.innerHTML=`<div style="font-size:13px;color:var(--text3);padding:8px 0">아직 태그가 없습니다. 아래에서 추가해보세요.</div>`;return;}
+  l.innerHTML=allTags.map(t=>{
+    const cnt=items.filter(i=>(i.charTags||[]).includes(t)).length;
+    return `<div class="tm-item" id="tmi-${e(t)}">
+      <span>${e(t)}</span>
+      <span class="tm-cnt">${cnt}개 에셋</span>
+      <button class="ibtn" onclick="startRenameTag('${e(t)}')" title="이름 수정">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      </button>
+      <button class="ibtn dng" onclick="delTag('${e(t)}')" title="삭제">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+      </button>
+    </div>`;
+  }).join('');
+}
+
+function startRenameTag(t){
+  const row=document.getElementById('tmi-'+t);
+  if(!row) return;
+  row.innerHTML=`
+    <input class="tm-edit-input" id="rename-${e(t)}" value="${e(t)}" onkeydown="renameTagKey(event,'${e(t)}')">
+    <button class="btn pri" style="padding:5px 10px;font-size:12px" onclick="confirmRenameTag('${e(t)}')">확인</button>
+    <button class="btn" style="padding:5px 10px;font-size:12px" onclick="renderTmList()">취소</button>
+  `;
+  document.getElementById('rename-'+t).focus();
+  document.getElementById('rename-'+t).select();
+}
+
+function renameTagKey(ev, oldTag){
+  if(ev.key==='Enter'){ev.preventDefault();confirmRenameTag(oldTag);}
+  if(ev.key==='Escape'){renderTmList();}
+}
+
+function confirmRenameTag(oldTag){
+  const input=document.getElementById('rename-'+oldTag);
+  if(!input) return;
+  const newTag=input.value.trim();
+  if(!newTag){alert('태그 이름을 입력해주세요.');return;}
+  if(newTag===oldTag){renderTmList();return;}
+  if(allTags.includes(newTag)){alert(`"${newTag}" 태그가 이미 존재합니다.`);return;}
+  // allTags 수정
+  const idx=allTags.indexOf(oldTag);
+  if(idx>-1) allTags[idx]=newTag;
+  sortTags();
+  // 모든 에셋의 태그도 변경
+  items.forEach(i=>{
+    if(i.charTags) i.charTags=i.charTags.map(x=>x===oldTag?newTag:x);
+  });
+  // 현재 필터가 바뀐 태그면 업데이트
+  if(curTagF===oldTag) curTagF=newTag;
+  renderTmList();
+}
+function tmKey(ev){if(ev.key==='Enter'){ev.preventDefault();tmAdd();}}
+function tmAdd(){
+  const v=document.getElementById('tmInput').value.trim(); if(!v)return;
+  if(!allTags.includes(v)){allTags.push(v);sortTags();}
+  document.getElementById('tmInput').value='';
+  renderTmList();
+}
+function delTag(t){
+  if(!confirm(`"${t}" 태그를 삭제할까요?\n이 태그가 달린 에셋에서도 제거됩니다.`))return;
+  allTags=allTags.filter(x=>x!==t);
+  items.forEach(i=>{i.charTags=(i.charTags||[]).filter(x=>x!==t);});
+  if(curTagF===t) curTagF='';
+  renderTmList();
+}
+
+// ─── share ───────────────────────────────
+function openShare(){
+  document.getElementById('shareOv').classList.add('open');
+  document.getElementById('suBox').textContent='https://hamg-web.github.io/booth-shelf-viewer/viewer.html';
+}
+function closeShare(){document.getElementById('shareOv').classList.remove('open');}
+function closeShareOv(ev){if(ev.target===document.getElementById('shareOv'))closeShare();}
+function copyUrl(){
+  navigator.clipboard.writeText('https://hamg-web.github.io/booth-shelf-viewer/viewer.html').then(()=>{
+    const b=document.getElementById('copyBtn');
+    b.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> 복사됨!`;
+    setTimeout(()=>{b.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> URL 복사`;},2000);
+  });
+}
+function exportForGithub(){
+  const b=new Blob([JSON.stringify({items,tags:allTags},null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);
+  a.download='data.json';a.click();
+}
+
+// ─── export ──────────────────────────────
+function exportData(){
+  const b=new Blob([JSON.stringify({items,tags:allTags},null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='booth-shelf-backup.json';a.click();
+}
+function importData(){
+  const input=document.createElement('input');
+  input.type='file'; input.accept='.json';
+  input.onchange=e=>{
+    const file=e.target.files[0]; if(!file)return;
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      try{
+        const parsed=JSON.parse(ev.target.result);
+        const newItems=normalizeItems(parsed.items||[]);
+        const newTags=parsed.tags||[];
+        if(!newItems.length){alert('불러올 에셋이 없습니다.');return;}
+        if(confirm(`${newItems.length}개 에셋을 불러올까요?\n\n[확인] 기존 데이터에 추가\n[취소] 기존 데이터 완전 교체`)){
+          // 기존에 추가 (중복 id 제외)
+          const existingIds=new Set(items.map(i=>i.id));
+          const toAdd=newItems.filter(i=>!existingIds.has(i.id));
+          items=[...items,...toAdd];
+          newTags.forEach(t=>{if(!allTags.includes(t)){allTags.push(t);}});
+          sortTags();
+          alert(`${toAdd.length}개 에셋이 추가됐어!`);
+        } else {
+          // 완전 교체
+          if(!confirm('정말로 기존 데이터를 모두 지우고 교체할까요?'))return;
+          items=newItems; allTags=newTags;
+          alert(`${items.length}개 에셋으로 교체됐어!`);
+        }
+        save();
+      }catch(err){alert('파일을 읽을 수 없어. JSON 형식이 맞는지 확인해줘!');}
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+// ─── github sync ─────────────────────────
+function openGh(){
+  document.getElementById('ghToken').value=localStorage.getItem('ghToken')||'';
+  document.getElementById('ghUser').value=localStorage.getItem('ghUser')||'hamg-web';
+  document.getElementById('ghRepo').value=localStorage.getItem('ghRepo')||'booth-shelf-viewer';
+  document.getElementById('ghOv').classList.add('open');
+}
+function closeGh(){document.getElementById('ghOv').classList.remove('open');}
+function closeGhOv(ev){if(ev.target===document.getElementById('ghOv'))closeGh();}
+function saveGhSettings(){
+  localStorage.setItem('ghToken',document.getElementById('ghToken').value.trim());
+  localStorage.setItem('ghUser',document.getElementById('ghUser').value.trim());
+  localStorage.setItem('ghRepo',document.getElementById('ghRepo').value.trim());
+  closeGh();
+  alert('설정이 저장됐어! 이제 GitHub 저장 버튼을 눌러봐.');
+}
+
+async function syncToGithub(){
+  const token=localStorage.getItem('ghToken');
+  const user=localStorage.getItem('ghUser')||'hamg-web';
+  const repo=localStorage.getItem('ghRepo')||'booth-shelf-viewer';
+  if(!token){ openGh(); return; }
+
+  const btn=document.getElementById('syncBtn');
+  btn.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin .7s linear infinite"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg><span>저장 중...</span>`;
+  btn.disabled=true;
+
+  try{
+    const content=btoa(unescape(encodeURIComponent(JSON.stringify({items,tags:allTags},null,2))));
+    const apiUrl=`https://api.github.com/repos/${user}/${repo}/contents/data.json`;
+
+    // 기존 파일 SHA 가져오기
+    let sha='';
+    try{
+      const r=await fetch(apiUrl,{headers:{'Authorization':`token ${token}`,'Accept':'application/vnd.github.v3+json'}});
+      if(r.ok){const d=await r.json();sha=d.sha;}
+    }catch(e){}
+
+    // 파일 업로드
+    const body={message:'update data.json',content};
+    if(sha) body.sha=sha;
+    const res=await fetch(apiUrl,{
+      method:'PUT',
+      headers:{'Authorization':`token ${token}`,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
+      body:JSON.stringify(body)
+    });
+    if(!res.ok){
+      const err=await res.json();
+      throw new Error(err.message||'업로드 실패');
+    }
+    btn.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>저장됨!</span>`;
+    setTimeout(()=>{
+      btn.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg><span>GitHub 저장</span>`;
+      btn.disabled=false;
+    },3000);
+  }catch(err){
+    alert('저장 실패: '+err.message+'\n\n토큰이나 레포 설정을 확인해줘!');
+    btn.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg><span>GitHub 저장</span>`;
+    btn.disabled=false;
+  }
+}
+
+// ─── utils ───────────────────────────────
+function e(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function openLink(u){if(u&&u.startsWith('http'))window.open(u,'_blank','noopener');}
+function gid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+function sortTags(){allTags.sort((a,b)=>a.localeCompare(b,'ko'));}
+
+init();
+</script>
+</body>
+</html>
